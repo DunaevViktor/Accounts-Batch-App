@@ -1,0 +1,7 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId">
+    <lightning:layout class="slds-grid_align-center">
+        <lightning:card class="slds-card slds-size_x-large card-st">
+            <center>Account Batch App</center>
+        </lightning:card>
+    </lightning:layout>
+</aura:component>
