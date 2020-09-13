@@ -6,6 +6,6 @@ global class scheduleAccounts implements Schedulable{
     //String jobID = System.schedule('update total amount', sch, reminder);
     
     global void execute(SchedulableContext ctx) {
-        Database.executeBatch(new batchAccount());
+        Database.executeBatch(new batchHierarchy());
     }
 }

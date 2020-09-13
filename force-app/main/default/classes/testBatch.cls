@@ -34,8 +34,8 @@
     @IsTest public static void test() {
         
         Test.startTest();
-        batchAccount batchA = new batchAccount();
-        Id batchId = Database.executeBatch(batchA);
+        batchHierarchy batchH = new batchHierarchy();
+        Id batchId = Database.executeBatch(batchH);
         Test.stopTest();
         
         List<Account> accounts = [SELECT Id, Total_Amount__c FROM Account];

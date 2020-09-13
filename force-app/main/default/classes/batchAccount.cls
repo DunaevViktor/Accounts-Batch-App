@@ -1,54 +1,40 @@
 global class batchAccount implements Database.Batchable<SObject>, Database.Stateful {
     
-    public Map<Id, Account> accountsToUpsert;
+    public Map<Id, AccountHierarchy> hierarchy;
+    public calculateTotalAmount amountCalculator;
     
-    //Сonstructor for initializing a map with a zeroed Totat_Amount__c
-    public batchAccount(){
-        accountsToUpsert = new Map<Id, Account>();
-        List<Account> allAccounts  = [SELECT Id, Total_Amount__c, ParentId, 
-                                      (SELECT Amount, StageName FROM Opportunities WHERE StageName = 'Closed Won') FROM Account];
-        for(Account acc: allAccounts){
-            acc.Total_Amount__c = 0;
-            accountsToUpsert.put(acc.Id, acc);
-        }
+    //Сonstructor
+    public batchAccount(Map<Id, AccountHierarchy> hierarchyMap){
+        hierarchy = hierarchyMap;
+        amountCalculator = new calculateTotalAmount();
     }
     
     //Sends a list of accounts with a nullified Total_Amount__c
     global List<Account> start(Database.BatchableContext bc) {
-        return accountsToUpsert.values();
+        List<Account> accounts = new List<Account>();
+        for(AccountHierarchy accountHierarchy: hierarchy.values()) {
+            accounts.add(accountHierarchy.account);
+        }
+        return accounts;
     }
     
-    //Recalculates Total_Amount__c values for each account
+    //Recalculates Total_Amount__c values for each account and updates it
     global void execute(Database.BatchableContext bc, List<Account> accounts){
+        List<Account> results = new List<Account>();
         
         for (Account account : accounts) {
-            Decimal amount = 0;
-            Account currAcc = accountsToUpsert.get(account.Id);
-            
-            for(Opportunity opportunity : currAcc.Opportunities) {
-                amount += opportunity.Amount;
-            }
-            
-            currAcc.Total_Amount__c += amount; 
-            updateParentAmount(currAcc, amount);
-            accountsToUpsert.put(account.Id, currAcc); 
+            AccountHierarchy accHier = hierarchy.get(account.Id);
+            amountCalculator.calculateTotalAmountFunc(accHier);
+            results.add(accHier.account);
+            results.addAll(accHier.getChildrens());
+            hierarchy.remove(account.Id);
         }
+        
+        update results;
     }
     
-    //Upsert summary data
     global void finish(Database.BatchableContext bc){
-        upsert accountsToUpsert.values();
-    } 
-    
-    //Recalculates "parent" value by "child" value
-    public void updateParentAmount(Account account, Decimal amount) {
-        if(account.ParentId != null) {
-            Account parentAccount = accountsToUpsert.get(account.ParentId);
-            parentAccount.Total_Amount__c += amount;
-            updateParentAmount(parentAccount, amount);
-            accountsToUpsert.put(account.ParentId, parentAccount); 
-        }
-        accountsToUpsert.put(account.Id, account); 
+        System.debug('All good!');
     }
     
 }

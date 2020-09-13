@@ -37,10 +37,6 @@
         <name>CustomObject</name>
     </types>
     <types>
-        <members>*</members>
-        <name>CustomApplication</name>
-    </types>
-    <types>
         <members>Account.Total_Amount__c</members>
         <name>CustomField</name>
     </types>
